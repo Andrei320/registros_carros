@@ -1,18 +1,13 @@
-import 'package:bloc/bloc.dart';
-import 'package:registros_carros/modelos_datos/carros_model.dart';
+import '../../modelos_datos/carros_model.dart';
 
-class CarrosState {}
+abstract class CarroState {}
 
-class CarrosLoading extends CarrosState {}
+class CarroInitialState extends CarroState {}
 
-class CarrosLoaded extends CarrosState {
+class CarroLoadingState extends CarroState {}
+
+class CarroLoadedState extends CarroState {
   final List<Carro> carros;
 
-  CarrosLoaded(this.carros);
-}
-
-class CarrosError extends CarrosState {
-  final String errorMessage;
-
-  CarrosError(this.errorMessage);
+  CarroLoadedState(this.carros);
 }
