@@ -8,6 +8,8 @@ class CarroSeleccionado extends CarroEvento {
   CarroSeleccionado({required this.indiceSeleccionado});
 }
 
+class GetCarros extends CarroEvento {}
+
 class InsertarCarro extends CarroEvento {
   final String apodo;
 
@@ -21,5 +23,3 @@ class EliminarCarro extends CarroEvento {
 
   EliminarCarro({required this.idCarro});
 }
-
-class GetCarros extends CarroEvento {}

@@ -6,9 +6,10 @@ import 'package:registros_carros/bloc/carros_bloc/carros_bloc_event.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_state.dart';
 
 class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
-  CarroBloc() : super(EstadoInicial()) {
+  final DBCarro dbCarro;
+  CarroBloc(this.dbCarro) : super(EstadoInicial()) {
     on<Inicializado>((event, emit) {
-      // Lógica de inicialización si es necesario
+      emit(EstadoInicial());
     });
 
     on<CarroSeleccionado>((event, emit) {
@@ -18,21 +19,21 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
 
     on<InsertarCarro>((event, emit) async {
       try {
-        DBCarro.addCarro(
-          event.apodo,
-        );
-        final carros = await DBCarro.getCarros();
-        emit(GetAllCarros(carros: carros));
+        await dbCarro.addCarro(event.apodo);
+
+        emit(CarroInsertado());
+        add(GetCarros());
       } catch (e) {
         emit(ErrorAlInsertarCarro(mensajeError: 'Error al insertar el carro.'));
       }
     });
 
-    on<EliminarCarro>((event, emit) async {
+    on<EliminarCarro>((event, emit) {
       try {
-        DBCarro.deleteCarro(event.idCarro);
-        final carros = await DBCarro.getCarros();
-        emit(GetAllCarros(carros: carros));
+        // Llama al método de la base de datos para eliminar el carro
+        dbCarro.deleteCarro(event.idCarro);
+        emit(CarroEliminado());
+        add(GetCarros());
       } catch (e) {
         emit(ErrorAlEliminarCarro(mensajeError: 'Error al eliminar el carro.'));
       }
@@ -40,7 +41,7 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
 
     on<GetCarros>((event, emit) async {
       try {
-        final carros = await DBCarro.getCarros();
+        final carros = await dbCarro.getCarros();
         emit(GetAllCarros(carros: carros));
       } catch (e) {
         emit(ErrorGetAllCarros(

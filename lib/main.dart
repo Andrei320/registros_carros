@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_event.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_state.dart';
 import 'package:registros_carros/database_helper/carros_database_helper.dart';
 
 void main() async {
-  await DBCarro.initializeDatabase();
+  WidgetsFlutterBinding.ensureInitialized();
+  final carrosDatabase = DBCarro();
+  await carrosDatabase.initializeDatabase();
   runApp(
     BlocProvider(
-      create: (context) => CarroBloc(),
+      create: (context) => CarroBloc(carrosDatabase),
       child: const App(),
     ),
   );
@@ -21,11 +22,9 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: BlocProvider(
-        create: (context) => CarroBloc(),
-        child: const Scaffold(body: MainApp()),
-      ),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(body: MainApp()),
     );
   }
 }
@@ -38,11 +37,17 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<CarroBloc>(context).add(Inicializado());
+    BlocProvider.of<CarroBloc>(context).add(GetCarros());
+  }
+
   int _indiceSeleccionado = 0;
 
   final List<Widget> _paginas = [
     const ListaCarros(),
-    const ListaMovimientos(),
     const ListaCategorias(),
   ];
 
@@ -50,8 +55,9 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gastos Vehiculares'),
-        backgroundColor: Colors.purple[200],
+        title: const Center(child: Text('Control de Gastos Vehicular')),
+        backgroundColor: Colors.purple,
+        actions: const [],
       ),
       body: _paginas[_indiceSeleccionado],
       bottomNavigationBar: BottomNavigationBar(
@@ -61,19 +67,15 @@ class _MainAppState extends State<MainApp> {
             label: 'Carros',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Movimientos',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.category),
             label: 'Categorias',
           ),
         ],
         currentIndex: _indiceSeleccionado,
         onTap: _onTabTapped,
-        backgroundColor: Colors.purple[200],
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.white,
+        backgroundColor: Colors.purple,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey,
       ),
     );
   }
@@ -86,191 +88,180 @@ class _MainAppState extends State<MainApp> {
 }
 
 class ListaCarros extends StatelessWidget {
-  const ListaCarros({Key? key}) : super(key: key);
-
+  const ListaCarros({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocBuilder<CarroBloc, CarroEstado>(
         builder: (context, state) {
-          if (state is CarroSeleccionadoEstado) {
-            // Puedes hacer algo específico cuando un carro está seleccionado
+          if (state is GetAllCarros) {
+            return _listaCarros(state.carros);
+          } else if (state is ErrorGetAllCarros) {
+            return Center(child: Text('Error: ${state.mensajeError}'));
+          } else {
+            return const Center(child: CircularProgressIndicator());
           }
-
-          return FutureBuilder<List<Map<String, dynamic>>>(
-            future: DBCarro.getCarros(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                List<Map<String, dynamic>> carros = snapshot.data ?? [];
-                return ListView.builder(
-                  itemCount: carros.length,
-                  itemBuilder: (context, index) {
-                    int carroID = carros[index]['idcarro'];
-                    String carroApodo = carros[index]['apodo'];
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ListTile(
-                          title: Text(carroApodo),
-                          onTap: () {
-                            context.read<CarroBloc>().add(
-                                CarroSeleccionado(indiceSeleccionado: carroID));
-                          },
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Center(
-                                        child: Text('¿Eliminar Carro?')),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text('Cancelar'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          context.read<CarroBloc>().add(
-                                              EliminarCarro(idCarro: carroID));
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text('Eliminar'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }
-            },
-          );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (BuildContext context) {
-              return const AnadirCarro();
-            },
-          );
+          _mostrarModal(context, 'Nuevo Carro');
         },
+        backgroundColor: Colors.green,
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
-}
 
-class ListaMovimientos extends StatelessWidget {
-  const ListaMovimientos({Key? key}) : super(key: key);
+  Widget _listaCarros(List<Map<String, dynamic>>? carros) {
+    if (carros != null && carros.isNotEmpty) {
+      return ListView.builder(
+        itemCount: carros.length,
+        itemBuilder: (context, index) {
+          final carro = carros[index];
+          int carroID = carros[index]['idcarro'];
+          return Column(
+            children: [
+              ListTile(
+                title: Text(carro['apodo'] ?? 'No Apodo'),
+                subtitle: const Text('Pendiente'),
+              ),
+              // Agregar el botón de borrado aquí
+              ElevatedButton.icon(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Center(child: Text('¿Eliminar Carro?')),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancelar'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              context
+                                  .read<CarroBloc>()
+                                  .add(EliminarCarro(idCarro: carroID));
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Eliminar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: const Icon(Icons.delete),
+                label: const Text('Borrar'),
+              ),
+              const Divider(), // Separador entre elementos de la lista
+            ],
+          );
+        },
+      );
+    } else {
+      return const Center(child: Text('No hay carros disponibles'));
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Movimientos'),
-      ),
+  void _mostrarModal(BuildContext context, String carros) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return const FractionallySizedBox(
+          heightFactor: 1.2,
+          child: AgregarCarro(),
+        );
+      },
     );
   }
 }
 
-class ListaCategorias extends StatelessWidget {
-  const ListaCategorias({Key? key}) : super(key: key);
+class AgregarCarro extends StatefulWidget {
+  const AgregarCarro({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Categorias'),
-      ),
-    );
-  }
+  State<AgregarCarro> createState() => _AgregarCarroState();
 }
 
-class AnadirCarro extends StatefulWidget {
-  const AnadirCarro({Key? key}) : super(key: key);
-
-  @override
-  State<AnadirCarro> createState() => _AnadirCarroState();
-}
-
-class _AnadirCarroState extends State<AnadirCarro> {
+class _AgregarCarroState extends State<AgregarCarro> {
   final _formKey = GlobalKey<FormState>();
-
   TextEditingController apodoController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nuevo Carro'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextFormField(
-                  controller: apodoController,
-                  decoration: InputDecoration(
-                    labelText: 'Apodo',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+    return BlocBuilder<CarroBloc, CarroEstado>(
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Nuevo Carro'),
+            backgroundColor: Colors.purple,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextFormField(
+                      controller: apodoController,
+                      decoration: InputDecoration(
+                        labelText: 'Apodo',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, ingrese un apodo';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, ingrese un apodo';
-                    }
-                    return null;
-                  },
+                    const SizedBox(height: 10.0),
+                    ElevatedButton(
+                      onPressed: () {
+                        _insertarCarro(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                      ),
+                      child: const Text('Insertar Carro'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20.0),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      String apodo = apodoController.text;
-
-                      context.read<CarroBloc>().add(
-                            InsertarCarro(
-                              apodo: apodo,
-                            ),
-                          );
-
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: const Text('Agregar Carro'),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+
+  void _insertarCarro(BuildContext context) {
+    final miBloc = BlocProvider.of<CarroBloc>(context);
+
+    if (_formKey.currentState?.validate() ?? false) {
+      miBloc.add(
+        InsertarCarro(
+          apodo: apodoController.text,
+        ),
+      );
+    }
+  }
+}
+
+class ListaCategorias extends StatelessWidget {
+  const ListaCategorias({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
