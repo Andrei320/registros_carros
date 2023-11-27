@@ -1,55 +1,58 @@
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
-import 'package:registros_carros/modelos_datos/carros_model.dart';
+late Database db;
 
-class DBCarros {
-  static Future<Database> _openDB() async {
-    return openDatabase(join(await getDatabasesPath(), "carros.db"),
-        onCreate: (db, version) {
-      return db.execute(
-        'CREATE TABLE carros (idCarro INTEGER PRIMARY KEY AUTOINCREMENT, apodo TEXT(30))',
-      );
-    }, version: 1);
-  }
+class DBCarro {
+  static Future<void> initializeDatabase() async {
+    var fabricaBaseDatos = databaseFactoryFfiWeb;
+    String rutaBaseDatos =
+        '${await fabricaBaseDatos.getDatabasesPath()}/carros.db';
 
-  Future<List<Carro>> getCarros() async {
-    Database db = await _openDB();
-    final List<Map<String, dynamic>> carrosMaps = await db.query('carros');
-
-    return List.generate(
-      carrosMaps.length,
-      (i) => Carro(
-        idCarro: carrosMaps[i]['idCarro'],
-        apodo: carrosMaps[i]['apodo'],
+    db = await fabricaBaseDatos.openDatabase(
+      rutaBaseDatos,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute(
+              'CREATE TABLE carros (idcarro INTEGER PRIMARY KEY AUTOINCREMENT, apodo TEXT(35) NOT NULL, archivado INT default 1);');
+        },
       ),
     );
   }
 
-  Future<void> insertCarro(Carro carro) async {
-    Database db = await _openDB();
-    await db.insert(
-      'carros',
-      carro.toMap(),
-    );
+//BD PARA CARROS
+
+  static Future<void> addCarro(String apodo) async {
+    await db.rawInsert('INSERT INTO carros (apodo) VALUES (?)', [apodo]);
   }
 
-  Future<void> deleteCarro(Carro carro) async {
-    Database db = await _openDB();
-    await db.delete(
-      'carros',
-      where: 'idCarro = ?',
-      whereArgs: [carro.idCarro],
-    );
+  static Future<void> deleteCarro(int id) async {
+    await db.rawDelete('DELETE FROM carros WHERE idcarro = ?', [id]);
   }
 
-  Future<void> updateCarro(Carro carro) async {
-    Database db = await _openDB();
-    await db.update(
-      'carros',
-      carro.toMap(),
-      where: 'idCarro = ?',
-      whereArgs: [carro.idCarro],
-    );
+  static Future<void> updateCarro(String apodo) async {
+    await db.rawUpdate('UPDATE carro SET apodo = ? WHERE idcarro = ?', [apodo]);
   }
+
+  static Future<List<Map<String, dynamic>>> getCarros() async {
+    var resultadoConsulta =
+        await db.rawQuery('SELECT * FROM carros ORDER BY archivado DESC;');
+    return resultadoConsulta;
+  }
+
+//BD PARA MOVIMIENTOS
+
+  static Future<void> insertarMovimiento(
+      String nombre, String descripcion, int monto, String fecha) async {
+    await db.rawInsert(
+        'INSERT INTO MOVIMIENTOS (NOMBRE, DESCRIPCION, MONTO, FECHA) VALUES (?,?,?,?)',
+        [nombre, descripcion, monto, fecha]);
+  }
+
+  static Future<void> eliminarMovimiento() async {
+    await db.rawDelete('DELETE FROM MOVIMIENTOS WHERE ID = ?');
+  }
+
+//BD PARA CATEGORIAS
 }

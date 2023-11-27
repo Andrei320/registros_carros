@@ -1,23 +1,25 @@
-import '../../modelos_datos/carros_model.dart';
+abstract class CarroEvento {}
 
-abstract class CarroEvent {}
+class Inicializado extends CarroEvento {}
 
-class FetchCarrosEvent extends CarroEvent {}
+class CarroSeleccionado extends CarroEvento {
+  final int indiceSeleccionado;
 
-class AddCarroEvent extends CarroEvent {
-  final Carro nuevoCarro;
-
-  AddCarroEvent(this.nuevoCarro);
+  CarroSeleccionado({required this.indiceSeleccionado});
 }
 
-class DeleteCarroEvent extends CarroEvent {
-  final Carro idCarro;
+class InsertarCarro extends CarroEvento {
+  final String apodo;
 
-  DeleteCarroEvent(this.idCarro);
+  InsertarCarro({
+    required this.apodo,
+  });
 }
 
-class UpdateCarroEvent extends CarroEvent {
-  final Carro idCarro;
+class EliminarCarro extends CarroEvento {
+  final int idCarro;
 
-  UpdateCarroEvent(this.idCarro);
+  EliminarCarro({required this.idCarro});
 }
+
+class GetCarros extends CarroEvento {}
