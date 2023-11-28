@@ -53,8 +53,10 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
+    //Carros
     BlocProvider.of<CarroBloc>(context).add(Inicializado());
     BlocProvider.of<CarroBloc>(context).add(GetCarros());
+    //Categorias
     BlocProvider.of<CategoriaBloc>(context).add(CategoriaInicializada());
     BlocProvider.of<CategoriaBloc>(context).add(GetCategorias());
   }
@@ -106,6 +108,7 @@ class _MainAppState extends State<MainApp> {
   }
 }
 
+//CARROS
 class ListaCarros extends StatelessWidget {
   const ListaCarros({super.key});
   @override
@@ -423,6 +426,7 @@ class _EditarCarroState extends State<EditarCarro> {
   }
 }
 
+//CATEGORIA
 class ListaCategorias extends StatelessWidget {
   const ListaCategorias({super.key});
   @override
