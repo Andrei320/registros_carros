@@ -56,7 +56,7 @@ class _MainAppState extends State<MainApp> {
     return Scaffold(
       appBar: AppBar(
         title: const Center(child: Text('Control de Gastos Vehicular')),
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.indigoAccent,
         actions: const [],
       ),
       body: _paginas[_indiceSeleccionado],
@@ -73,7 +73,7 @@ class _MainAppState extends State<MainApp> {
         ],
         currentIndex: _indiceSeleccionado,
         onTap: _onTabTapped,
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.indigoAccent,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
       ),
@@ -128,36 +128,51 @@ class ListaCarros extends StatelessWidget {
                 subtitle: const Text('Pendiente'),
               ),
               // Agregar el botón de borrado aquí
-              ElevatedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Center(child: Text('¿Eliminar Carro?')),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Cancelar'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              context
-                                  .read<CarroBloc>()
-                                  .add(EliminarCarro(idCarro: carroID));
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Eliminar'),
-                          ),
-                        ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title:
+                                const Center(child: Text('¿Eliminar Carro?')),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  context
+                                      .read<CarroBloc>()
+                                      .add(EliminarCarro(idCarro: carroID));
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Eliminar'),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
-                  );
-                },
-                icon: const Icon(Icons.delete),
-                label: const Text('Borrar'),
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Borrar'),
+                  ),
+                  const Padding(padding: EdgeInsets.all(8.0)),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _mostrarModalEditar(context,
+                          carro); // Envía los datos del carro para la edición
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Editar'),
+                  ),
+                ],
               ),
               const Divider(), // Separador entre elementos de la lista
             ],
@@ -254,6 +269,100 @@ class _AgregarCarroState extends State<AgregarCarro> {
           apodo: apodoController.text,
         ),
       );
+    }
+  }
+}
+
+// Agrega un nuevo método para mostrar el modal de edición
+void _mostrarModalEditar(BuildContext context, Map<String, dynamic> carro) {
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return FractionallySizedBox(
+        heightFactor: 1.2,
+        child: EditarCarro(carro: carro),
+      );
+    },
+  );
+}
+
+// Crea un nuevo widget para la edición del carro
+class EditarCarro extends StatefulWidget {
+  final Map<String, dynamic> carro;
+
+  const EditarCarro({super.key, required this.carro});
+
+  @override
+  State<EditarCarro> createState() => _EditarCarroState();
+}
+
+class _EditarCarroState extends State<EditarCarro> {
+  late TextEditingController apodoController;
+
+  @override
+  void initState() {
+    super.initState();
+    apodoController = TextEditingController(text: widget.carro['apodo']);
+    // Agrega inicializaciones de otros campos si es necesario
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Editar Carro'),
+        backgroundColor: Colors.blueAccent, // Color para identificar la edición
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextFormField(
+                controller: apodoController,
+                decoration: InputDecoration(
+                  labelText: 'Apodo',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese un apodo';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: () {
+                  _actualizarCarro(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                ),
+                child: const Text('Actualizar Carro'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _actualizarCarro(BuildContext context) {
+    final miBloc = BlocProvider.of<CarroBloc>(context);
+
+    if (apodoController.text.isNotEmpty) {
+      miBloc.add(
+        UpdateCarro(
+          apodo: apodoController.text,
+          idcarro: widget.carro['idcarro'],
+        ),
+      );
+      Navigator.of(context)
+          .pop(); // Cierra el modal después de la actualización
     }
   }
 }

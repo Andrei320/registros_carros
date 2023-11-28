@@ -23,6 +23,12 @@ class DBCarro {
 
 //BD PARA CARROS
 
+  Future<List<Map<String, dynamic>>> getCarros() async {
+    var resultadoConsulta =
+        await db.rawQuery('SELECT * FROM carros ORDER BY archivado DESC;');
+    return resultadoConsulta;
+  }
+
   Future<void> addCarro(String apodo) async {
     await db.rawInsert('INSERT INTO carros (apodo) VALUES (?)', [apodo]);
   }
@@ -31,13 +37,8 @@ class DBCarro {
     await db.rawDelete('DELETE FROM carros WHERE idcarro = ?', [id]);
   }
 
-  Future<void> updateCarro(String apodo) async {
-    await db.rawUpdate('UPDATE carro SET apodo = ? WHERE idcarro = ?', [apodo]);
-  }
-
-  Future<List<Map<String, dynamic>>> getCarros() async {
-    var resultadoConsulta =
-        await db.rawQuery('SELECT * FROM carros ORDER BY archivado DESC;');
-    return resultadoConsulta;
+  Future<void> updateCarro(String apodo, int id) async {
+    await db.rawUpdate(
+        'UPDATE carros SET apodo = ? WHERE idcarro = ?', [apodo, id]);
   }
 }

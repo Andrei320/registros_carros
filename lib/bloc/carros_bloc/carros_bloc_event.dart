@@ -23,3 +23,10 @@ class EliminarCarro extends CarroEvento {
 
   EliminarCarro({required this.idCarro});
 }
+
+class UpdateCarro extends CarroEvento {
+  final String apodo;
+  final int idcarro;
+
+  UpdateCarro({required this.apodo, required this.idcarro});
+}

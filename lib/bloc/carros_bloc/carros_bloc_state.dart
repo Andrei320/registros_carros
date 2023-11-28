@@ -20,6 +20,15 @@ class CarroInsertado extends CarroEstado {}
 
 class CarroEliminado extends CarroEstado {}
 
+class CarroActualizado extends CarroEstado {}
+
+class ErrorGetAllCarros extends CarroEstado {
+  @override
+  final String mensajeError;
+
+  ErrorGetAllCarros({required this.mensajeError});
+}
+
 class ErrorAlInsertarCarro extends CarroEstado {
   @override
   final String mensajeError;
@@ -34,9 +43,9 @@ class ErrorAlEliminarCarro extends CarroEstado {
   ErrorAlEliminarCarro({required this.mensajeError});
 }
 
-class ErrorGetAllCarros extends CarroEstado {
+class ErrorAlActualizarCarro extends CarroEstado {
   @override
   final String mensajeError;
 
-  ErrorGetAllCarros({required this.mensajeError});
+  ErrorAlActualizarCarro({required this.mensajeError});
 }

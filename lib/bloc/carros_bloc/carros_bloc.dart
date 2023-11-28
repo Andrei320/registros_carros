@@ -17,6 +17,16 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
       emit(CarroSeleccionadoEstado(idSeleccionado: idSeleccionado));
     });
 
+    on<GetCarros>((event, emit) async {
+      try {
+        final carros = await dbCarro.getCarros();
+        emit(GetAllCarros(carros: carros));
+      } catch (e) {
+        emit(ErrorGetAllCarros(
+            mensajeError: 'Error al cargar todos los carros: $e'));
+      }
+    });
+
     on<InsertarCarro>((event, emit) async {
       try {
         await dbCarro.addCarro(event.apodo);
@@ -39,13 +49,14 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
       }
     });
 
-    on<GetCarros>((event, emit) async {
+    on<UpdateCarro>((event, emit) async {
       try {
-        final carros = await dbCarro.getCarros();
-        emit(GetAllCarros(carros: carros));
+        dbCarro.updateCarro(event.apodo, event.idcarro);
+
+        emit(CarroActualizado());
+        add(GetCarros());
       } catch (e) {
-        emit(ErrorGetAllCarros(
-            mensajeError: 'Error al cargar todos los carros: $e'));
+        emit(ErrorAlInsertarCarro(mensajeError: 'Error al insertar el carro.'));
       }
     });
   }
