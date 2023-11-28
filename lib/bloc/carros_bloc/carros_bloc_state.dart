@@ -1,4 +1,3 @@
-//Carros
 abstract class CarroEstado {
   get mensajeError => null;
 }
@@ -58,52 +57,4 @@ class ErrorAlArchivarCarro extends CarroEstado {
   final String mensajeError;
 
   ErrorAlArchivarCarro({required this.mensajeError});
-}
-
-//Categorias
-
-class CategoriaSeleccionadoEstado extends CarroEstado {
-  final int idSeleccionado;
-
-  CategoriaSeleccionadoEstado({required this.idSeleccionado});
-}
-
-class GetAllCategorias extends CarroEstado {
-  final List<Map<String, dynamic>> categorias;
-
-  GetAllCategorias({required this.categorias});
-}
-
-class CategoriaInsertada extends CarroEstado {}
-
-class CategoriaActualizada extends CarroEstado {}
-
-class CategoriaArchivada extends CarroEstado {}
-
-class ErrorGetAllCategorias extends CarroEstado {
-  @override
-  final String mensajeError;
-
-  ErrorGetAllCategorias({required this.mensajeError});
-}
-
-class ErrorAlInsertarCategoria extends CarroEstado {
-  @override
-  final String mensajeError;
-
-  ErrorAlInsertarCategoria({required this.mensajeError});
-}
-
-class ErrorAlActualizarCategoria extends CarroEstado {
-  @override
-  final String mensajeError;
-
-  ErrorAlActualizarCategoria({required this.mensajeError});
-}
-
-class ErrorAlArchivarCategoria extends CarroEstado {
-  @override
-  final String mensajeError;
-
-  ErrorAlArchivarCategoria({required this.mensajeError});
 }

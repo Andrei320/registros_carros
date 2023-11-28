@@ -5,9 +5,10 @@ late Database db;
 
 class DBCarro {
   Future<void> initializeDatabase() async {
+    print('Inciando la base de datos');
     var fabricaBaseDatos = databaseFactoryFfiWeb;
     String rutaBaseDatos =
-        '${await fabricaBaseDatos.getDatabasesPath()}/carros.db';
+        '${await fabricaBaseDatos.getDatabasesPath()}/carros_registros.db';
 
     db = await fabricaBaseDatos.openDatabase(
       rutaBaseDatos,
@@ -15,18 +16,12 @@ class DBCarro {
         version: 1,
         onCreate: (db, version) async {
           await db.execute(
-              'CREATE TABLE carros (idcarro INTEGER PRIMARY KEY AUTOINCREMENT, apodo TEXT(35) NOT NULL, archivado INT default 1);');
-        },
-      ),
-    );
+              'CREATE TABLE IF NOT EXISTS carros (idcarro INTEGER PRIMARY KEY AUTOINCREMENT, apodo TEXT(35) NOT NULL, archivado INT default 1)');
+          print('Creada la tabla carros');
 
-    db = await fabricaBaseDatos.openDatabase(
-      rutaBaseDatos,
-      options: OpenDatabaseOptions(
-        version: 1,
-        onCreate: (db, version) async {
           await db.execute(
-              'CREATE TABLE categorias (idcategoria INTEGER PRIMARY KEY AUTOINCREMENT, nombrecategoria TEXT(35) NOT NULL, archivado INT default 1);');
+              'CREATE TABLE IF NOT EXISTS categorias (idcategoria INTEGER PRIMARY KEY AUTOINCREMENT, nombrecategoria TEXT(35) NOT NULL, archivado INT default 1)');
+          print('Creada la tabla categorias');
         },
       ),
     );
@@ -60,7 +55,6 @@ class DBCarro {
   }
 
 //DB PARA CATEGORIAS
-
   Future<List<Map<String, dynamic>>> getCategorias() async {
     var resultadoConsulta =
         await db.rawQuery('SELECT * FROM categorias ORDER BY archivado DESC;');
@@ -68,11 +62,15 @@ class DBCarro {
   }
 
   Future<void> addCategoria(String nombrecategoria) async {
-    await db.rawInsert(
-        'INSERT INTO categorias (apodo) VALUES (?)', [nombrecategoria]);
+    await db.rawInsert('INSERT INTO categorias (nombrecategoria) VALUES (?)',
+        [nombrecategoria]);
   }
 
-  Future<void> updateCategorias(String nombrecategoria, int id) async {
+  Future<void> deleteCategoria(int id) async {
+    await db.rawDelete('DELETE FROM categorias WHERE idcategoria = ?', [id]);
+  }
+
+  Future<void> updateCategoria(String nombrecategoria, int id) async {
     await db.rawUpdate(
         'UPDATE categorias SET nombrecategoria = ? WHERE idcategoria = ?',
         [nombrecategoria, id]);
@@ -80,7 +78,7 @@ class DBCarro {
 
   Future<void> archivarCategoria(int id) async {
     await db.rawUpdate(
-        'UPDATE categorias SET archivado = CASE WHEN archivado = 1 THEN 0 WHEN archivado = 0 THEN 1 ELSE archivado END WHERE idcarro = ?',
+        'UPDATE categorias SET archivado = CASE WHEN archivado = 1 THEN 0 WHEN archivado = 0 THEN 1 ELSE archivado END WHERE idcategoria = ?',
         [id]);
   }
 
