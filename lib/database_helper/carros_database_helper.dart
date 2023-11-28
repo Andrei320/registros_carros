@@ -19,6 +19,17 @@ class DBCarro {
         },
       ),
     );
+
+    db = await fabricaBaseDatos.openDatabase(
+      rutaBaseDatos,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute(
+              'CREATE TABLE categorias (idcategoria INTEGER PRIMARY KEY AUTOINCREMENT, nombrecategoria TEXT(35) NOT NULL, archivado INT default 1);');
+        },
+      ),
+    );
   }
 
 //BD PARA CARROS
@@ -47,4 +58,31 @@ class DBCarro {
         'UPDATE carros SET archivado = CASE WHEN archivado = 1 THEN 0 WHEN archivado = 0 THEN 1 ELSE archivado END WHERE idcarro = ?',
         [id]);
   }
+
+//DB PARA CATEGORIAS
+
+  Future<List<Map<String, dynamic>>> getCategorias() async {
+    var resultadoConsulta =
+        await db.rawQuery('SELECT * FROM categorias ORDER BY archivado DESC;');
+    return resultadoConsulta;
+  }
+
+  Future<void> addCategoria(String nombrecategoria) async {
+    await db.rawInsert(
+        'INSERT INTO categorias (apodo) VALUES (?)', [nombrecategoria]);
+  }
+
+  Future<void> updateCategorias(String nombrecategoria, int id) async {
+    await db.rawUpdate(
+        'UPDATE categorias SET nombrecategoria = ? WHERE idcategoria = ?',
+        [nombrecategoria, id]);
+  }
+
+  Future<void> archivarCategoria(int id) async {
+    await db.rawUpdate(
+        'UPDATE categorias SET archivado = CASE WHEN archivado = 1 THEN 0 WHEN archivado = 0 THEN 1 ELSE archivado END WHERE idcarro = ?',
+        [id]);
+  }
+
+//DB PARA GASTOS
 }

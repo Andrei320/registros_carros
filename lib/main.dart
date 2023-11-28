@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:registros_carros/bloc/carros_bloc/carros_bloc.dart';
+import 'package:registros_carros/bloc/carros_bloc.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_event.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_state.dart';
+
 import 'package:registros_carros/database_helper/carros_database_helper.dart';
 
 void main() async {
@@ -41,6 +42,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
+    //Carros
     BlocProvider.of<CarroBloc>(context).add(Inicializado());
     BlocProvider.of<CarroBloc>(context).add(GetCarros());
   }

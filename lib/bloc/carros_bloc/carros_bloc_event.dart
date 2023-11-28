@@ -1,3 +1,4 @@
+//Carros
 abstract class CarroEvento {}
 
 class Inicializado extends CarroEvento {}
@@ -35,4 +36,43 @@ class ArchivarCarro extends CarroEvento {
   final int idcarro;
 
   ArchivarCarro({required this.idcarro});
+}
+
+//Categorias
+
+class CategoriaInicializada extends CarroEvento {}
+
+class CategoriaSeleccionada extends CarroEvento {
+  final int indiceSeleccionado;
+
+  CategoriaSeleccionada({required this.indiceSeleccionado});
+}
+
+class GetCategorias extends CarroEvento {}
+
+class InsertarCategoria extends CarroEvento {
+  final String nombrecategoria;
+
+  InsertarCategoria({
+    required this.nombrecategoria,
+  });
+}
+
+class EliminarCategoria extends CarroEvento {
+  final int idcategoria;
+
+  EliminarCategoria({required this.idcategoria});
+}
+
+class UpdateCategoria extends CarroEvento {
+  final String nombrecategoria;
+  final int idcategoria;
+
+  UpdateCategoria({required this.nombrecategoria, required this.idcategoria});
+}
+
+class ArchivarCategoria extends CarroEvento {
+  final int idcategoria;
+
+  ArchivarCategoria({required this.idcategoria});
 }
