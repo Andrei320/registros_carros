@@ -58,7 +58,7 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
         add(GetCarros());
       } catch (e) {
         emit(ErrorAlActualizarCarro(
-            mensajeError: 'Error al actualizar el carro.'));
+            mensajeError: 'Error al insertar el carro.'));
       }
     });
 
@@ -69,49 +69,7 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
         emit(CarroArchivado());
         add(GetCarros());
       } catch (e) {
-        emit(ErrorAlArchivarCarro(mensajeError: 'Error al archivar el carro.'));
-      }
-    });
-
-//Categorias
-    on<CategoriaSeleccionada>((event, emit) {
-      final int idSeleccionado = event.indiceSeleccionado;
-      emit(CategoriaSeleccionadoEstado(idSeleccionado: idSeleccionado));
-    });
-
-    on<InsertarCategoria>((event, emit) async {
-      try {
-        await dbCarro.addCategoria(event.nombrecategoria);
-
-        emit(CategoriaInsertada());
-        add(GetCategorias());
-      } catch (e) {
-        emit(ErrorAlInsertarCategoria(
-            mensajeError: 'Error al insertar la categoria.'));
-      }
-    });
-
-    on<UpdateCategoria>((event, emit) async {
-      try {
-        dbCarro.updateCategorias(event.nombrecategoria, event.idcategoria);
-
-        emit(CategoriaActualizada());
-        add(GetCategorias());
-      } catch (e) {
-        emit(ErrorAlActualizarCategoria(
-            mensajeError: 'Error al actualizar la categoria.'));
-      }
-    });
-
-    on<ArchivarCategoria>((event, emit) async {
-      try {
-        dbCarro.archivarCategoria(event.idcategoria);
-
-        emit(CategoriaArchivada());
-        add(GetCategorias());
-      } catch (e) {
-        emit(ErrorAlArchivarCategoria(
-            mensajeError: 'Error al archivar la categoria.'));
+        emit(ErrorAlArchivarCarro(mensajeError: 'Error al insertar el carro.'));
       }
     });
   }
