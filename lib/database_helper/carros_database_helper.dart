@@ -41,4 +41,10 @@ class DBCarro {
     await db.rawUpdate(
         'UPDATE carros SET apodo = ? WHERE idcarro = ?', [apodo, id]);
   }
+
+  Future<void> archivarCarro(int id) async {
+    await db.rawUpdate(
+        'UPDATE carros SET archivado = CASE WHEN archivado = 1 THEN 0 WHEN archivado = 0 THEN 1 ELSE archivado END WHERE idcarro = ?',
+        [id]);
+  }
 }

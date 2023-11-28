@@ -56,7 +56,19 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
         emit(CarroActualizado());
         add(GetCarros());
       } catch (e) {
-        emit(ErrorAlInsertarCarro(mensajeError: 'Error al insertar el carro.'));
+        emit(ErrorAlActualizarCarro(
+            mensajeError: 'Error al insertar el carro.'));
+      }
+    });
+
+    on<ArchivarCarro>((event, emit) async {
+      try {
+        dbCarro.archivarCarro(event.idcarro);
+
+        emit(CarroArchivado());
+        add(GetCarros());
+      } catch (e) {
+        emit(ErrorAlArchivarCarro(mensajeError: 'Error al insertar el carro.'));
       }
     });
   }

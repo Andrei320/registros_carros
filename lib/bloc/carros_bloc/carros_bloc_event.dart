@@ -30,3 +30,9 @@ class UpdateCarro extends CarroEvento {
 
   UpdateCarro({required this.apodo, required this.idcarro});
 }
+
+class ArchivarCarro extends CarroEvento {
+  final int idcarro;
+
+  ArchivarCarro({required this.idcarro});
+}

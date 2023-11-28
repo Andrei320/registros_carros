@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_event.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_state.dart';
@@ -121,11 +122,13 @@ class ListaCarros extends StatelessWidget {
         itemBuilder: (context, index) {
           final carro = carros[index];
           int carroID = carros[index]['idcarro'];
+          int archivado = carros[index]['archivado'];
           return Column(
             children: [
               ListTile(
                 title: Text(carro['apodo'] ?? 'No Apodo'),
                 subtitle: const Text('Pendiente'),
+                tileColor: archivado == 1 ? Colors.white : Colors.red,
               ),
               // Agregar el botón de borrado aquí
               Row(
@@ -171,6 +174,41 @@ class ListaCarros extends StatelessWidget {
                     },
                     icon: const Icon(Icons.edit),
                     label: const Text('Editar'),
+                  ),
+                  const Padding(padding: EdgeInsets.all(8.0)),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Center(
+                                child: archivado == 1
+                                    ? const Text('¿Archivar Carro?')
+                                    : const Text('¿Volver a activar?')),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  context
+                                      .read<CarroBloc>()
+                                      .add(ArchivarCarro(idcarro: carroID));
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Archivar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.archive),
+                    label: const Text('Archivar'),
                   ),
                 ],
               ),
