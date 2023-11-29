@@ -8,6 +8,9 @@ import 'package:registros_carros/bloc/carros_bloc/carros_bloc_state.dart';
 import 'package:registros_carros/bloc/categorias_bloc/categorias_bloc.dart';
 import 'package:registros_carros/bloc/categorias_bloc/categorias_bloc_estado.dart';
 import 'package:registros_carros/bloc/categorias_bloc/categorias_bloc_eventos.dart';
+//Movimientos
+import 'package:registros_carros/bloc/movimientos_bloc/movimientos_bloc.dart';
+import 'package:registros_carros/bloc/movimientos_bloc/movimientos_bloc_eventos.dart';
 //DB
 import 'package:registros_carros/database_helper/carros_database_helper.dart';
 
@@ -23,6 +26,9 @@ void main() async {
         ),
         BlocProvider<CategoriaBloc>(
           create: (context) => CategoriaBloc(carrosDatabase),
+        ),
+        BlocProvider<MovimientoBloc>(
+          create: (context) => MovimientoBloc(carrosDatabase),
         ),
       ],
       child: const App(),
@@ -53,10 +59,15 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
+    //CARROS
     BlocProvider.of<CarroBloc>(context).add(Inicializado());
     BlocProvider.of<CarroBloc>(context).add(GetCarros());
+    //CATEGORIAS
     BlocProvider.of<CategoriaBloc>(context).add(CategoriaInicializada());
     BlocProvider.of<CategoriaBloc>(context).add(GetCategorias());
+    //MOVIMIENTOS
+    BlocProvider.of<MovimientoBloc>(context).add(MovimientoInicializado());
+    BlocProvider.of<MovimientoBloc>(context).add(GetMovimientos());
   }
 
   int _indiceSeleccionado = 0;
@@ -64,6 +75,7 @@ class _MainAppState extends State<MainApp> {
   final List<Widget> _paginas = [
     const ListaCarros(),
     const ListaCategorias(),
+    const ListaMovimientos(),
   ];
 
   @override
@@ -89,6 +101,10 @@ class _MainAppState extends State<MainApp> {
             icon: Icon(Icons.category),
             label: 'Categorias',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.payments_outlined),
+            label: 'Gastos',
+          )
         ],
         currentIndex: _indiceSeleccionado,
         onTap: _onTabTapped,
@@ -738,5 +754,14 @@ class _EditarCategoriaState extends State<EditarCategoria> {
       Navigator.of(context)
           .pop(); // Cierra el modal después de la actualización
     }
+  }
+}
+
+class ListaMovimientos extends StatelessWidget {
+  const ListaMovimientos({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }

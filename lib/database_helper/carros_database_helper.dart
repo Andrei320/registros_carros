@@ -5,7 +5,6 @@ late Database db;
 
 class DBCarro {
   Future<void> initializeDatabase() async {
-    print('Inciando la base de datos');
     var fabricaBaseDatos = databaseFactoryFfiWeb;
     String rutaBaseDatos =
         '${await fabricaBaseDatos.getDatabasesPath()}/carros_registros.db';
@@ -17,11 +16,12 @@ class DBCarro {
         onCreate: (db, version) async {
           await db.execute(
               'CREATE TABLE IF NOT EXISTS carros (idcarro INTEGER PRIMARY KEY AUTOINCREMENT, apodo TEXT(35) NOT NULL, archivado INT default 1)');
-          print('Creada la tabla carros');
 
           await db.execute(
               'CREATE TABLE IF NOT EXISTS categorias (idcategoria INTEGER PRIMARY KEY AUTOINCREMENT, nombrecategoria TEXT(35) NOT NULL, archivado INT default 1)');
-          print('Creada la tabla categorias');
+
+          await db.execute(
+              'CREATE TABLE IF NOT EXISTS movimientos (idmovimiento INTEGER PRIMARY KEY AUTOINCREMENT,nombremovimiento TEXT(35) NOT NULL,idcarro INT NOT NULL, idcategoria INT NOT NULL, gastototal INT NOT NULL)');
         },
       ),
     );
@@ -83,4 +83,26 @@ class DBCarro {
   }
 
 //DB PARA GASTOS
+  Future<List<Map<String, dynamic>>> getMovimientos() async {
+    var resultadoConsulta = await db.rawQuery('SELECT * FROM movimientos;');
+    return resultadoConsulta;
+  }
+
+  Future<void> addMovimiento(String nombremovimiento, int idcarro,
+      int idcategoria, int gastototal) async {
+    await db.rawInsert(
+        'INSERT INTO movimientos (nombremovimiento,idcarro,idcategoria,gastototal) VALUES (?)',
+        [nombremovimiento, idcarro, idcategoria, gastototal]);
+  }
+
+  Future<void> deleteMovimiento(int id) async {
+    await db.rawDelete('DELETE FROM movimientos WHERE idmovimiento = ?', [id]);
+  }
+
+  Future<void> updateMovimiento(String nombremovimiento, int idcarro,
+      int idcategoria, int gastototal, int id) async {
+    await db.rawUpdate(
+        'UPDATE movimientos SET nombremovimiento = ?,idcarro = ?,idcategoria=?,gastototal=? WHERE idcategoria = ?',
+        [nombremovimiento, idcarro, idcategoria, gastototal, id]);
+  }
 }
