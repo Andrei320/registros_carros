@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+
 //Carros
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_event.dart';
@@ -677,7 +679,7 @@ void _mostrarModalEditarCategoria(
   );
 }
 
-// Crea un nuevo widget para la edición del carro
+// Crea un nuevo widget para la edición de la categoria
 class EditarCategoria extends StatefulWidget {
   final Map<String, dynamic> categoria;
 
@@ -882,6 +884,22 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
   int carroSeleccionado = 1;
   int categoriaSeleccionada = 1;
   TextEditingController gastosController = TextEditingController();
+  DateTime selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime.now()
+          .subtract(const Duration(days: 365)), // Restringe un año hacia atrás
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -985,6 +1003,13 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 10.0),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: Text(
+                      'Seleccionar fecha: ${DateFormat('yyyy-MM-dd').format(selectedDate)}'),
+                ),
+                const SizedBox(height: 10.0),
                 ElevatedButton(
                   onPressed: () {
                     _insertarMovimiento(context);
@@ -1005,6 +1030,8 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
   void _insertarMovimiento(BuildContext context) {
     final miBloc = BlocProvider.of<MovimientoBloc>(context);
     int numeroIngresado = int.tryParse(gastosController.text)!;
+    String fechaSeleccionada =
+        DateFormat('yyyy-MM-dd').format(selectedDate).toString();
 
     if (_formKey.currentState?.validate() ?? false) {
       miBloc.add(
@@ -1013,6 +1040,7 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
           idcarro: carroSeleccionado,
           idcategoria: categoriaSeleccionada,
           gastototal: numeroIngresado,
+          fechagasto: fechaSeleccionada,
         ),
       );
     }
@@ -1033,7 +1061,7 @@ void _mostrarModalEditarMovimiento(
   );
 }
 
-// Crea un nuevo widget para la edición del carro
+// Crea un nuevo widget para la edición del movimiento
 class EditarMovimiento extends StatefulWidget {
   final Map<String, dynamic> movimiento;
 
@@ -1048,6 +1076,21 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
   int carroSeleccionado = 1;
   int categoriaSeleccionada = 1;
   TextEditingController gastosController = TextEditingController();
+  DateTime selectedFecha = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedFecha,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedFecha) {
+      setState(() {
+        selectedFecha = picked;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -1056,7 +1099,11 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
     carroSeleccionado = widget.movimiento['idcarro'];
     categoriaSeleccionada = widget.movimiento['idcategoria'];
     gastosController.text = widget.movimiento['gastototal'].toString();
-    // Agrega inicializaciones de otros campos si es necesario
+    String fechaDB = widget.movimiento['fechagasto'];
+    selectedFecha = DateTime.parse(
+        fechaDB); // Asigna la fecha de la base de datos a selectedDate
+    print(
+        selectedFecha); // Añadir este print para verificar el valor de selectedDate
   }
 
   @override
@@ -1160,6 +1207,12 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
               ),
               const SizedBox(height: 10.0),
               ElevatedButton(
+                onPressed: () => _selectDate(context),
+                child: Text(
+                    'Seleccionar fecha: ${DateFormat('yyyy-MM-dd').format(selectedFecha)}'),
+              ),
+              const SizedBox(height: 10.0),
+              ElevatedButton(
                 onPressed: () {
                   _actualizarMovimiento(context);
                 },
@@ -1178,6 +1231,8 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
   void _actualizarMovimiento(BuildContext context) {
     final miBloc = BlocProvider.of<MovimientoBloc>(context);
     int numeroIngresado = int.tryParse(gastosController.text)!;
+    String fechaSeleccionada =
+        DateFormat('yyyy-MM-dd').format(selectedFecha).toString();
 
     if (nombreController.text.isNotEmpty) {
       miBloc.add(
@@ -1186,6 +1241,7 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
           idcarro: carroSeleccionado,
           idcategoria: categoriaSeleccionada,
           gastototal: numeroIngresado,
+          fechagasto: fechaSeleccionada,
           idmovimiento: widget.movimiento['idmovimiento'],
         ),
       );

@@ -17,12 +17,14 @@ class InsertarMovimiento extends MovimientoEvento {
   final int idcarro;
   final int idcategoria;
   final int gastototal;
+  final String fechagasto;
 
   InsertarMovimiento({
     required this.nombremovimiento,
     required this.idcarro,
     required this.idcategoria,
     required this.gastototal,
+    required this.fechagasto,
   });
 }
 
@@ -38,6 +40,7 @@ class UpdateMovimiento extends MovimientoEvento {
   final int idcategoria;
   final int gastototal;
   final int idmovimiento;
+  final String fechagasto;
 
   UpdateMovimiento({
     required this.nombremovimiento,
@@ -45,5 +48,6 @@ class UpdateMovimiento extends MovimientoEvento {
     required this.idcategoria,
     required this.gastototal,
     required this.idmovimiento,
+    required this.fechagasto,
   });
 }

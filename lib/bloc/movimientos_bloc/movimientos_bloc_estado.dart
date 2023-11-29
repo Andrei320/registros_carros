@@ -16,13 +16,6 @@ class GetAllMovimientos extends MovimientoEstado {
   GetAllMovimientos({required this.movimientos});
 }
 
-class GetAllCarrosCategoriasList extends MovimientoEstado {
-  final List<Map<String, dynamic>> carros;
-  final List<Map<String, dynamic>> categorias;
-
-  GetAllCarrosCategoriasList({required this.carros, required this.categorias});
-}
-
 class MovimientoInsertado extends MovimientoEstado {}
 
 class MovimientoEliminado extends MovimientoEstado {}
