@@ -36,6 +36,7 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
 
         emit(MovimientoInsertado());
         add(GetMovimientos());
+        // add(GetMovimientos());
       } catch (e) {
         emit(ErrorAlInsertarMovimiento(
             mensajeError: 'Error al insertar el movimiento.'));
@@ -62,6 +63,12 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
           event.gastototal,
           event.idmovimiento,
         );
+
+        print(event.nombremovimiento);
+        print(event.idcarro);
+        print(event.idcategoria);
+        print(event.gastototal);
+        print(event.idmovimiento);
 
         emit(MovimientoActualizado());
         add(GetMovimientos());

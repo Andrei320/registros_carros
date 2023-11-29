@@ -91,7 +91,7 @@ class DBCarro {
   Future<void> addMovimiento(String nombremovimiento, int idcarro,
       int idcategoria, int gastototal) async {
     await db.rawInsert(
-        'INSERT INTO movimientos (nombremovimiento,idcarro,idcategoria,gastototal) VALUES (?)',
+        'INSERT INTO movimientos (nombremovimiento, idcarro, idcategoria, gastototal) VALUES (?, ?, ?, ?)',
         [nombremovimiento, idcarro, idcategoria, gastototal]);
   }
 
@@ -100,9 +100,9 @@ class DBCarro {
   }
 
   Future<void> updateMovimiento(String nombremovimiento, int idcarro,
-      int idcategoria, int gastototal, int id) async {
+      int idcategoria, int gastototal, int idmovimiento) async {
     await db.rawUpdate(
-        'UPDATE movimientos SET nombremovimiento = ?,idcarro = ?,idcategoria=?,gastototal=? WHERE idcategoria = ?',
-        [nombremovimiento, idcarro, idcategoria, gastototal, id]);
+        'UPDATE movimientos SET nombremovimiento=?,idcarro=?,idcategoria=?,gastototal=? WHERE idmovimiento = ?',
+        [nombremovimiento, idcarro, idcategoria, gastototal, idmovimiento]);
   }
 }

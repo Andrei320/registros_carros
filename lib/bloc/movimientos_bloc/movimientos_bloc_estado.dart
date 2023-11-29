@@ -16,6 +16,13 @@ class GetAllMovimientos extends MovimientoEstado {
   GetAllMovimientos({required this.movimientos});
 }
 
+class GetAllCarrosCategoriasList extends MovimientoEstado {
+  final List<Map<String, dynamic>> carros;
+  final List<Map<String, dynamic>> categorias;
+
+  GetAllCarrosCategoriasList({required this.carros, required this.categorias});
+}
+
 class MovimientoInsertado extends MovimientoEstado {}
 
 class MovimientoEliminado extends MovimientoEstado {}
@@ -27,6 +34,13 @@ class ErrorGetAllMovimientos extends MovimientoEstado {
   final String mensajeError;
 
   ErrorGetAllMovimientos({required this.mensajeError});
+}
+
+class ErrorGetAllCarrosCategoriasList extends MovimientoEstado {
+  @override
+  final String mensajeError;
+
+  ErrorGetAllCarrosCategoriasList({required this.mensajeError});
 }
 
 class ErrorAlInsertarMovimiento extends MovimientoEstado {

@@ -10,6 +10,8 @@ class MovimientoSeleccionado extends MovimientoEvento {
 
 class GetMovimientos extends MovimientoEvento {}
 
+class GetCarrosCategoriasList extends MovimientoEvento {}
+
 class InsertarMovimiento extends MovimientoEvento {
   final String nombremovimiento;
   final int idcarro;
