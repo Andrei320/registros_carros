@@ -35,6 +35,12 @@ class DBCarro {
     return resultadoConsulta;
   }
 
+  Future<List<Map<String, dynamic>>> getCarrosdl() async {
+    var resultadoConsulta =
+        await db.rawQuery('SELECT * FROM carros WHERE archivado = 1;');
+    return resultadoConsulta;
+  }
+
   Future<void> addCarro(String apodo) async {
     await db.rawInsert('INSERT INTO carros (apodo) VALUES (?)', [apodo]);
   }
@@ -84,7 +90,8 @@ class DBCarro {
 
 //DB PARA GASTOS
   Future<List<Map<String, dynamic>>> getMovimientos() async {
-    var resultadoConsulta = await db.rawQuery('SELECT * FROM movimientos;');
+    var resultadoConsulta = await db.rawQuery(
+        'SELECT * FROM movimientos INNER JOIN carros ON movimientos.idcarro = carros.idcarro INNER JOIN categorias ON movimientos.idcategoria = categorias.idcategoria;');
     return resultadoConsulta;
   }
 
