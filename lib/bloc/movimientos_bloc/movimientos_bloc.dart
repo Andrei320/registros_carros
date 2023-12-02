@@ -25,6 +25,16 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
       }
     });
 
+    on<GetCarrosDl>((event, emit) async {
+      try {
+        final movimientos = await dbCarro.getCarrosdl();
+        emit(GetAllCarrosDl(carrosdl: movimientos));
+      } catch (e) {
+        emit(ErrorGetAllCarrosDl(
+            mensajeError: 'Error al cargar todas las movimientos: $e'));
+      }
+    });
+
     on<InsertarMovimiento>((event, emit) async {
       try {
         await dbCarro.addMovimiento(
@@ -32,6 +42,7 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
           event.idcarro,
           event.idcategoria,
           event.gastototal,
+          event.fechagasto,
         );
 
         emit(MovimientoInsertado());
@@ -61,6 +72,7 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
           event.idcategoria,
           event.gastototal,
           event.idmovimiento,
+          event.fechagasto,
         );
 
         emit(MovimientoActualizado());

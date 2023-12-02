@@ -16,6 +16,12 @@ class GetAllCarros extends CarroEstado {
   GetAllCarros({required this.carros});
 }
 
+class GetAllCarrosdl extends CarroEstado {
+  final List<Map<String, dynamic>> carrosdl;
+
+  GetAllCarrosdl({required this.carrosdl});
+}
+
 class CarroInsertado extends CarroEstado {}
 
 class CarroEliminado extends CarroEstado {}
@@ -29,6 +35,13 @@ class ErrorGetAllCarros extends CarroEstado {
   final String mensajeError;
 
   ErrorGetAllCarros({required this.mensajeError});
+}
+
+class ErrorGetAllCarrosDL extends CarroEstado {
+  @override
+  final String mensajeError;
+
+  ErrorGetAllCarrosDL({required this.mensajeError});
 }
 
 class ErrorAlInsertarCarro extends CarroEstado {

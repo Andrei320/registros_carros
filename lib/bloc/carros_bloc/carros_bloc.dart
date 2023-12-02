@@ -28,6 +28,16 @@ class CarroBloc extends Bloc<CarroEvento, CarroEstado> {
       }
     });
 
+    on<GetCarrosdl>((event, emit) async {
+      try {
+        final carrosdl = await dbCarro.getCarrosdl();
+        emit(GetAllCarrosdl(carrosdl: carrosdl));
+      } catch (e) {
+        emit(ErrorGetAllCarrosDL(
+            mensajeError: 'Error al cargar todos los carros: $e'));
+      }
+    });
+
     on<InsertarCarro>((event, emit) async {
       try {
         await dbCarro.addCarro(event.apodo);

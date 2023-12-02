@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+
 //Carros
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc.dart';
 import 'package:registros_carros/bloc/carros_bloc/carros_bloc_event.dart';
@@ -10,6 +13,7 @@ import 'package:registros_carros/bloc/categorias_bloc/categorias_bloc_estado.dar
 import 'package:registros_carros/bloc/categorias_bloc/categorias_bloc_eventos.dart';
 //Movimientos
 import 'package:registros_carros/bloc/movimientos_bloc/movimientos_bloc.dart';
+import 'package:registros_carros/bloc/movimientos_bloc/movimientos_bloc_estado.dart';
 import 'package:registros_carros/bloc/movimientos_bloc/movimientos_bloc_eventos.dart';
 //DB
 import 'package:registros_carros/database_helper/carros_database_helper.dart';
@@ -157,54 +161,25 @@ class ListaCarros extends StatelessWidget {
           final carro = carros[index];
           int carroID = carros[index]['idcarro'];
           int archivado = carros[index]['archivado'];
+          int totalGasto = carro['totalgasto'] ?? 0;
+
           return Column(
             children: [
               ListTile(
                 title: Text(carro['apodo'] ?? 'No Apodo'),
-                subtitle: const Text('Pendiente'),
+                subtitle: Text('Gasto Total: $totalGasto'),
                 tileColor: archivado == 1 ? Colors.white : Colors.red,
               ),
               // Agregar el botón de borrado aquí
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title:
-                                const Center(child: Text('¿Eliminar Carro?')),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Cancelar'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  context
-                                      .read<CarroBloc>()
-                                      .add(EliminarCarro(idCarro: carroID));
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Eliminar'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    icon: const Icon(Icons.delete),
-                    label: const Text('Borrar'),
-                  ),
                   const Padding(padding: EdgeInsets.all(8.0)),
                   ElevatedButton.icon(
                     onPressed: () {
-                      _mostrarModalEditar(context,
-                          carro); // Envía los datos del carro para la edición
+                      archivado == 1
+                          ? _mostrarModalEditar(context, carro)
+                          : null;
                     },
                     icon: const Icon(Icons.edit),
                     label: const Text('Editar'),
@@ -316,6 +291,7 @@ class _AgregarCarroState extends State<AgregarCarro> {
                     ElevatedButton(
                       onPressed: () {
                         _insertarCarro(context);
+                        Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
@@ -474,48 +450,18 @@ class ListaCategorias extends StatelessWidget {
           final categoria = categorias[index];
           int categoriaID = categorias[index]['idcategoria'];
           int archivado = categorias[index]['archivado'];
+          int totalGasto = categoria['totalgasto'] ?? 0;
           return Column(
             children: [
               ListTile(
                 title: Text(categoria['nombrecategoria'] ?? 'No hay nombre'),
+                subtitle: Text('Gasto Total: $totalGasto'),
                 tileColor: archivado == 1 ? Colors.white : Colors.red,
               ),
               // Agregar el botón de borrado aquí
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Center(
-                                child: Text('¿Eliminar Categoria?')),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Cancelar'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  context.read<CategoriaBloc>().add(
-                                      EliminarCategoria(
-                                          idcategoria: categoriaID));
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Eliminar'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    icon: const Icon(Icons.delete),
-                    label: const Text('Borrar'),
-                  ),
                   const Padding(padding: EdgeInsets.all(8.0)),
                   ElevatedButton.icon(
                     onPressed: () {
@@ -632,6 +578,7 @@ class _AgregarCategoriaState extends State<AgregarCategoria> {
                     ElevatedButton(
                       onPressed: () {
                         _insertarCategoria(context);
+                        Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
@@ -675,7 +622,7 @@ void _mostrarModalEditarCategoria(
   );
 }
 
-// Crea un nuevo widget para la edición del carro
+// Crea un nuevo widget para la edición de la categoria
 class EditarCategoria extends StatefulWidget {
   final Map<String, dynamic> categoria;
 
@@ -762,6 +709,593 @@ class ListaMovimientos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      body: BlocBuilder<MovimientoBloc, MovimientoEstado>(
+        builder: (context, state) {
+          if (state is GetAllMovimientos) {
+            return _listaMovientos(state.movimientos);
+          } else if (state is ErrorGetAllMovimientos) {
+            return Center(child: Text('Error: ${state.mensajeError}'));
+          } else {
+            return Center(child: Text('${state.mensajeError}'));
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _mostrarModal(context, 'Nuevo Movimiento');
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _listaMovientos(List<Map<String, dynamic>>? movimientos) {
+    if (movimientos != null && movimientos.isNotEmpty) {
+      return ListView.builder(
+        itemCount: movimientos.length,
+        itemBuilder: (context, index) {
+          final movimiento = movimientos[index];
+          int movimientoID = movimientos[index]['idmovimiento'];
+          final gastototal = movimiento['gastototal'].toString();
+          final fechagasto = movimiento['fechagasto'];
+          String idcarro = movimiento['apodo'];
+          String idcategoria = movimiento['nombrecategoria'];
+          return Column(
+            children: [
+              ListTile(
+                title: Text(movimiento['nombremovimiento'] ?? 'No hay nombre'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Asociado a: $idcarro'),
+                    Text('Asociado a la categoria: $idcategoria'),
+                    Text('Gasto sobre concepto: $gastototal'),
+                    Text('Fecha del gasto: $fechagasto'),
+                  ],
+                ),
+              ),
+              // Agregar el botón de borrado aquí
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Center(
+                                child: Text('¿Eliminar Movimiento?')),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  context.read<MovimientoBloc>().add(
+                                      EliminarMovimiento(
+                                          idmovimiento: movimientoID));
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Eliminar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Borrar'),
+                  ),
+                  const Padding(padding: EdgeInsets.all(8.0)),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _mostrarModalEditarMovimiento(context,
+                          movimiento); // Envía los datos del carro para la edición
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Editar'),
+                  ),
+                ],
+              ),
+              const Divider(), // Separador entre elementos de la lista
+            ],
+          );
+        },
+      );
+    } else {
+      return const Center(child: Text('No hay gastos disponibles'));
+    }
+  }
+
+  void _mostrarModal(BuildContext context, String movimiento) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return const FractionallySizedBox(
+          heightFactor: 1.2,
+          child: AgregarMovimiento(),
+        );
+      },
+    );
+  }
+
+  void _mostrarFiltroDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Filtrar Movimientos'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Filtra por'),
+              const SizedBox(height: 10.0),
+              // Dropdown para carros
+              BlocBuilder<CarroBloc, CarroEstado>(
+                builder: (context, carroState) {
+                  if (carroState is GetAllCarros) {
+                    List<Map<String, dynamic>> carros = carroState.carros;
+                    int carroSeleccionado =
+                        0; // Variable para almacenar el carro seleccionado
+
+                    return DropdownButton<int>(
+                      onChanged: (newValue) {
+                        // Actualizar el valor seleccionado del carro
+                        carroSeleccionado = newValue!;
+                      },
+                      value: carroSeleccionado,
+                      items: carros.map((carro) {
+                        return DropdownMenuItem<int>(
+                          value: carro['idcarro'],
+                          child: Text(carro['apodo'].toString()),
+                        );
+                      }).toList(),
+                    );
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
+              ),
+              const SizedBox(height: 10.0),
+              // Dropdown para categorías
+              BlocBuilder<CategoriaBloc, CategoriaEstado>(
+                builder: (context, categoriaState) {
+                  if (categoriaState is GetAllCategorias) {
+                    List<Map<String, dynamic>> categorias =
+                        categoriaState.categorias;
+                    int categoriaSeleccionada =
+                        0; // Variable para almacenar la categoría seleccionada
+
+                    return DropdownButton<int>(
+                      onChanged: (newValue) {
+                        // Actualizar el valor seleccionado de la categoría
+                        categoriaSeleccionada = newValue!;
+                      },
+                      value: categoriaSeleccionada,
+                      items: categorias.map((categoria) {
+                        return DropdownMenuItem<int>(
+                          value: categoria['idcategoria'],
+                          child: Text(categoria['nombrecategoria'].toString()),
+                        );
+                      }).toList(),
+                    );
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
+              ),
+              const SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: () {
+                  // Aquí deberías llamar a tu método para filtrar los movimientos
+                  // usando carroSeleccionado y categoriaSeleccionada
+                  // Ejemplo: context.read<MovimientoBloc>().add(GetFiltros(idcarro: carroSeleccionado, idcategoria: categoriaSeleccionada));
+                  Navigator.pop(context); // Cerrar el diálogo de filtro
+                },
+                child: const Text('Aplicar Filtro'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AgregarMovimiento extends StatefulWidget {
+  const AgregarMovimiento({super.key});
+
+  @override
+  State<AgregarMovimiento> createState() => _AgregarMovimientoState();
+}
+
+class _AgregarMovimientoState extends State<AgregarMovimiento> {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController nombreController = TextEditingController();
+  int carroSeleccionado = 1;
+  int categoriaSeleccionada = 1;
+  TextEditingController gastosController = TextEditingController();
+  DateTime selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime.now()
+          .subtract(const Duration(days: 365)), // Restringe un año hacia atrás
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Nuevo Gasto'),
+        backgroundColor: Colors.purple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    BlocBuilder<CarroBloc, CarroEstado>(
+                      builder: (context, carroState) {
+                        if (carroState is GetAllCarros) {
+                          List<Map<String, dynamic>> carros = carroState.carros;
+
+                          return DropdownButton<int>(
+                            onChanged: (newValue) {
+                              setState(() {
+                                carroSeleccionado = newValue!;
+                              });
+                            },
+                            value: carroSeleccionado, // Valor seleccionado
+                            items: carros.map((carro) {
+                              return DropdownMenuItem<int>(
+                                value: carro['idcarro'],
+                                child: Text(carro['apodo'].toString()),
+                              );
+                            }).toList(),
+                          );
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+                      },
+                    ),
+                    BlocBuilder<CategoriaBloc, CategoriaEstado>(
+                      builder: (context, categoriaState) {
+                        if (categoriaState is GetAllCategorias) {
+                          List<Map<String, dynamic>> categorias =
+                              categoriaState.categorias;
+
+                          return DropdownButton<int>(
+                            value: categoriaSeleccionada,
+                            onChanged: (newValue) {
+                              setState(() {
+                                categoriaSeleccionada = newValue!;
+                              });
+                            },
+                            items: categorias.map((categoria) {
+                              return DropdownMenuItem<int>(
+                                value: categoria['idcategoria'],
+                                child: Text(
+                                    categoria['nombrecategoria'].toString()),
+                              );
+                            }).toList(),
+                          );
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+                TextFormField(
+                  controller: nombreController,
+                  decoration: InputDecoration(
+                    labelText: 'Concepto',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, ingrese un nombre para el gasto';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10.0),
+                TextFormField(
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                  ],
+                  controller: gastosController,
+                  decoration: InputDecoration(
+                    labelText: 'Total del gasto',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, ingrese una cantidad';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10.0),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: Text(
+                      'Seleccionar fecha: ${DateFormat('yyyy-MM-dd').format(selectedDate)}'),
+                ),
+                const SizedBox(height: 10.0),
+                ElevatedButton(
+                  onPressed: () {
+                    _insertarMovimiento(context);
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                  ),
+                  child: const Text('Insertar Gasto'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _insertarMovimiento(BuildContext context) {
+    final miBloc = BlocProvider.of<MovimientoBloc>(context);
+    int numeroIngresado = int.tryParse(gastosController.text)!;
+    String fechaSeleccionada =
+        DateFormat('yyyy-MM-dd').format(selectedDate).toString();
+
+    if (_formKey.currentState?.validate() ?? false) {
+      miBloc.add(
+        InsertarMovimiento(
+          nombremovimiento: nombreController.text,
+          idcarro: carroSeleccionado,
+          idcategoria: categoriaSeleccionada,
+          gastototal: numeroIngresado,
+          fechagasto: fechaSeleccionada,
+        ),
+      );
+    }
+  }
+}
+
+// Agrega un nuevo método para mostrar el modal de edición
+void _mostrarModalEditarMovimiento(
+    BuildContext context, Map<String, dynamic> movimiento) {
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return FractionallySizedBox(
+        heightFactor: 1.2,
+        child: EditarMovimiento(movimiento: movimiento),
+      );
+    },
+  );
+}
+
+// Crea un nuevo widget para la edición del movimiento
+class EditarMovimiento extends StatefulWidget {
+  final Map<String, dynamic> movimiento;
+
+  const EditarMovimiento({super.key, required this.movimiento});
+
+  @override
+  State<EditarMovimiento> createState() => _EditarMovimientoState();
+}
+
+class _EditarMovimientoState extends State<EditarMovimiento> {
+  TextEditingController nombreController = TextEditingController();
+  int carroSeleccionado = 1;
+  int categoriaSeleccionada = 1;
+  TextEditingController gastosController = TextEditingController();
+  DateTime selectedFecha = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedFecha,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedFecha) {
+      setState(() {
+        selectedFecha = picked;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    nombreController.text = widget.movimiento['nombremovimiento'];
+    carroSeleccionado = widget.movimiento['idcarro'];
+    categoriaSeleccionada = widget.movimiento['idcategoria'];
+    gastosController.text = widget.movimiento['gastototal'].toString();
+    String fechaDB = widget.movimiento['fechagasto'];
+    selectedFecha = DateTime.parse(
+        fechaDB); // Asigna la fecha de la base de datos a selectedDate
+    print(
+        selectedFecha); // Añadir este print para verificar el valor de selectedDate
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Nuevo Gasto'),
+        backgroundColor: Colors.purple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  BlocBuilder<CarroBloc, CarroEstado>(
+                    builder: (context, carroState) {
+                      if (carroState is GetAllCarros) {
+                        List<Map<String, dynamic>> carros = carroState.carros;
+
+                        return DropdownButton<int>(
+                          onChanged: (newValue) {
+                            setState(() {
+                              carroSeleccionado = newValue!;
+                            });
+                          },
+                          value: carroSeleccionado, // Valor seleccionado
+                          items: carros.map((carro) {
+                            return DropdownMenuItem<int>(
+                              value: carro['idcarro'],
+                              child: Text(carro['apodo'].toString()),
+                            );
+                          }).toList(),
+                        );
+                      } else {
+                        return const CircularProgressIndicator();
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10.0),
+                  BlocBuilder<CategoriaBloc, CategoriaEstado>(
+                    builder: (context, categoriaState) {
+                      if (categoriaState is GetAllCategorias) {
+                        List<Map<String, dynamic>> categorias =
+                            categoriaState.categorias;
+
+                        return DropdownButton<int>(
+                          value: categoriaSeleccionada,
+                          onChanged: (newValue) {
+                            setState(() {
+                              categoriaSeleccionada = newValue!;
+                            });
+                          },
+                          items: categorias.map((categoria) {
+                            return DropdownMenuItem<int>(
+                              value: categoria['idcategoria'],
+                              child:
+                                  Text(categoria['nombrecategoria'].toString()),
+                            );
+                          }).toList(),
+                        );
+                      } else {
+                        return const CircularProgressIndicator();
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10.0),
+              TextFormField(
+                controller: nombreController,
+                decoration: InputDecoration(
+                  labelText: 'Nombre Gasto',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese un nombre para el gasto';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10.0),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                ],
+                controller: gastosController,
+                decoration: InputDecoration(
+                  labelText: 'Total del gasto',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese una cantidad';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: () => _selectDate(context),
+                child: Text(
+                    'Seleccionar fecha: ${DateFormat('yyyy-MM-dd').format(selectedFecha)}'),
+              ),
+              const SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: () {
+                  _actualizarMovimiento(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                ),
+                child: const Text('Actualizar Gasto'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _actualizarMovimiento(BuildContext context) {
+    final miBloc = BlocProvider.of<MovimientoBloc>(context);
+    int numeroIngresado = int.tryParse(gastosController.text)!;
+    String fechaSeleccionada =
+        DateFormat('yyyy-MM-dd').format(selectedFecha).toString();
+
+    if (nombreController.text.isNotEmpty) {
+      miBloc.add(
+        UpdateMovimiento(
+          nombremovimiento: nombreController.text,
+          idcarro: carroSeleccionado,
+          idcategoria: categoriaSeleccionada,
+          gastototal: numeroIngresado,
+          fechagasto: fechaSeleccionada,
+          idmovimiento: widget.movimiento['idmovimiento'],
+        ),
+      );
+      Navigator.of(context)
+          .pop(); // Cierra el modal después de la actualización
+    }
   }
 }

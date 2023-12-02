@@ -7,7 +7,7 @@ class DBCarro {
   Future<void> initializeDatabase() async {
     var fabricaBaseDatos = databaseFactoryFfiWeb;
     String rutaBaseDatos =
-        '${await fabricaBaseDatos.getDatabasesPath()}/carros_registros.db';
+        '${await fabricaBaseDatos.getDatabasesPath()}/carros_gastos.db';
 
     db = await fabricaBaseDatos.openDatabase(
       rutaBaseDatos,
@@ -21,7 +21,7 @@ class DBCarro {
               'CREATE TABLE IF NOT EXISTS categorias (idcategoria INTEGER PRIMARY KEY AUTOINCREMENT, nombrecategoria TEXT(35) NOT NULL, archivado INT default 1)');
 
           await db.execute(
-              'CREATE TABLE IF NOT EXISTS movimientos (idmovimiento INTEGER PRIMARY KEY AUTOINCREMENT,nombremovimiento TEXT(35) NOT NULL,idcarro INT NOT NULL, idcategoria INT NOT NULL, gastototal INT NOT NULL)');
+              'CREATE TABLE IF NOT EXISTS movimientos (idmovimiento INTEGER PRIMARY KEY AUTOINCREMENT, nombremovimiento TEXT NOT NULL, idcarro INT NOT NULL, idcategoria INT NOT NULL, gastototal INT NOT NULL, fechagasto TEXT(30) NOT NULL)');
         },
       ),
     );
@@ -30,8 +30,14 @@ class DBCarro {
 //BD PARA CARROS
 
   Future<List<Map<String, dynamic>>> getCarros() async {
+    var resultadoConsulta = await db.rawQuery(
+        'SELECT carros.*, COALESCE(SUM(movimientos.gastototal), 0) AS totalgasto FROM carros LEFT JOIN movimientos ON carros.idcarro = movimientos.idcarro GROUP BY carros.idcarro ORDER BY archivado DESC;');
+    return resultadoConsulta;
+  }
+
+  Future<List<Map<String, dynamic>>> getCarrosdl() async {
     var resultadoConsulta =
-        await db.rawQuery('SELECT * FROM carros ORDER BY archivado DESC;');
+        await db.rawQuery('SELECT * FROM carros WHERE archivado = 1;');
     return resultadoConsulta;
   }
 
@@ -56,8 +62,8 @@ class DBCarro {
 
 //DB PARA CATEGORIAS
   Future<List<Map<String, dynamic>>> getCategorias() async {
-    var resultadoConsulta =
-        await db.rawQuery('SELECT * FROM categorias ORDER BY archivado DESC;');
+    var resultadoConsulta = await db.rawQuery(
+        'SELECT * ,COALESCE(SUM(movimientos.gastototal),0) AS totalgasto FROM categorias LEFT JOIN movimientos on categorias.idcategoria = movimientos.idcategoria GROUP BY categorias.idcategoria ORDER BY archivado DESC;');
     return resultadoConsulta;
   }
 
@@ -84,25 +90,50 @@ class DBCarro {
 
 //DB PARA GASTOS
   Future<List<Map<String, dynamic>>> getMovimientos() async {
-    var resultadoConsulta = await db.rawQuery('SELECT * FROM movimientos;');
+    var resultadoConsulta = await db.rawQuery(
+        'SELECT * FROM movimientos INNER JOIN carros ON movimientos.idcarro = carros.idcarro INNER JOIN categorias ON movimientos.idcategoria = categorias.idcategoria;');
     return resultadoConsulta;
   }
 
-  Future<void> addMovimiento(String nombremovimiento, int idcarro,
-      int idcategoria, int gastototal) async {
-    await db.rawInsert(
-        'INSERT INTO movimientos (nombremovimiento,idcarro,idcategoria,gastototal) VALUES (?)',
-        [nombremovimiento, idcarro, idcategoria, gastototal]);
+  Future<void> addMovimiento(
+    String nombremovimiento,
+    int idcarro,
+    int idcategoria,
+    int gastototal,
+    String fechagasto,
+  ) async {
+    try {
+      await db.rawInsert(
+        'INSERT INTO movimientos (nombremovimiento, idcarro, idcategoria, gastototal, fechagasto) VALUES (?, ?, ?, ?, ?)',
+        [nombremovimiento, idcarro, idcategoria, gastototal, fechagasto],
+      );
+      print('Movimiento insertado correctamente');
+    } catch (e) {
+      print('Error al insertar el movimiento: $e');
+      // Maneja el error de inserción aquí si es necesario
+    }
   }
 
   Future<void> deleteMovimiento(int id) async {
     await db.rawDelete('DELETE FROM movimientos WHERE idmovimiento = ?', [id]);
   }
 
-  Future<void> updateMovimiento(String nombremovimiento, int idcarro,
-      int idcategoria, int gastototal, int id) async {
+  Future<void> updateMovimiento(
+      String nombremovimiento,
+      int idcarro,
+      int idcategoria,
+      int gastototal,
+      int idmovimiento,
+      String fechagasto) async {
     await db.rawUpdate(
-        'UPDATE movimientos SET nombremovimiento = ?,idcarro = ?,idcategoria=?,gastototal=? WHERE idcategoria = ?',
-        [nombremovimiento, idcarro, idcategoria, gastototal, id]);
+        'UPDATE movimientos SET nombremovimiento=?,idcarro=?,idcategoria=?,gastototal=?,fechagasto=? WHERE idmovimiento = ?',
+        [
+          nombremovimiento,
+          idcarro,
+          idcategoria,
+          gastototal,
+          fechagasto,
+          idmovimiento,
+        ]);
   }
 }
