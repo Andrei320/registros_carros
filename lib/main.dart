@@ -465,8 +465,9 @@ class ListaCategorias extends StatelessWidget {
                   const Padding(padding: EdgeInsets.all(8.0)),
                   ElevatedButton.icon(
                     onPressed: () {
-                      _mostrarModalEditarCategoria(context,
-                          categoria); // Envía los datos del carro para la edición
+                      archivado == 1
+                          ? _mostrarModalEditarCategoria(context, categoria)
+                          : null; // Envía los datos del carro para la edición
                     },
                     icon: const Icon(Icons.edit),
                     label: const Text('Editar'),
