@@ -21,7 +21,7 @@ class DBCarro {
               'CREATE TABLE IF NOT EXISTS categorias (idcategoria INTEGER PRIMARY KEY AUTOINCREMENT, nombrecategoria TEXT(35) NOT NULL, archivado INT default 1)');
 
           await db.execute(
-              ' CREATE TABLE IF NOT EXISTS movimientos (idmovimiento INTEGER PRIMARY KEY AUTOINCREMENT, nombremovimiento TEXT NOT NULL, idcarro INT NOT NULL, idcategoria INT NOT NULL, gastototal INT NOT NULL, fechagasto TEXT(30) NOT NULL)');
+              'CREATE TABLE IF NOT EXISTS movimientos (idmovimiento INTEGER PRIMARY KEY AUTOINCREMENT, nombremovimiento TEXT NOT NULL, idcarro INT NOT NULL, idcategoria INT NOT NULL, gastototal INT NOT NULL, fechagasto TEXT(30) NOT NULL)');
         },
       ),
     );
@@ -30,8 +30,8 @@ class DBCarro {
 //BD PARA CARROS
 
   Future<List<Map<String, dynamic>>> getCarros() async {
-    var resultadoConsulta =
-        await db.rawQuery('SELECT * FROM carros ORDER BY archivado DESC;');
+    var resultadoConsulta = await db.rawQuery(
+        'SELECT carros.*, COALESCE(SUM(movimientos.gastototal), 0) AS totalgasto FROM carros LEFT JOIN movimientos ON carros.idcarro = movimientos.idcarro GROUP BY carros.idcarro ORDER BY archivado DESC;');
     return resultadoConsulta;
   }
 
@@ -62,8 +62,8 @@ class DBCarro {
 
 //DB PARA CATEGORIAS
   Future<List<Map<String, dynamic>>> getCategorias() async {
-    var resultadoConsulta =
-        await db.rawQuery('SELECT * FROM categorias ORDER BY archivado DESC;');
+    var resultadoConsulta = await db.rawQuery(
+        'SELECT * ,COALESCE(SUM(movimientos.gastototal),0) AS totalgasto FROM categorias LEFT JOIN movimientos on categorias.idcategoria = movimientos.idcategoria GROUP BY categorias.idcategoria ORDER BY archivado DESC;');
     return resultadoConsulta;
   }
 

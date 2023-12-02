@@ -161,10 +161,13 @@ class ListaCarros extends StatelessWidget {
           final carro = carros[index];
           int carroID = carros[index]['idcarro'];
           int archivado = carros[index]['archivado'];
+          int totalGasto = carro['totalgasto'] ?? 0;
+
           return Column(
             children: [
               ListTile(
                 title: Text(carro['apodo'] ?? 'No Apodo'),
+                subtitle: Text('Gasto Total: $totalGasto'),
                 tileColor: archivado == 1 ? Colors.white : Colors.red,
               ),
               // Agregar el botón de borrado aquí
@@ -447,10 +450,12 @@ class ListaCategorias extends StatelessWidget {
           final categoria = categorias[index];
           int categoriaID = categorias[index]['idcategoria'];
           int archivado = categorias[index]['archivado'];
+          int totalGasto = categoria['totalgasto'] ?? 0;
           return Column(
             children: [
               ListTile(
                 title: Text(categoria['nombrecategoria'] ?? 'No hay nombre'),
+                subtitle: Text('Gasto Total: $totalGasto'),
                 tileColor: archivado == 1 ? Colors.white : Colors.red,
               ),
               // Agregar el botón de borrado aquí
