@@ -1,10 +1,15 @@
 import 'package:sqflite/sqflite.dart';
+// import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart'; Funcion para WEB
 
 late Database db;
 
+//SI SE QUIERE TRABAJAR CON WEB SOLO DESCOMENTAR EL IMPORT DE FFIWEB JUNTO CON SU DATABASEFACTORY
+//Y COMENTAR EL DATABASEFACTORY QUE ES PARA ANDROID
+
 class DBCarro {
   Future<void> initializeDatabase() async {
-    var fabricaBaseDatos = databaseFactory;
+    // var fabricaBaseDatos = databaseFactoryFfiWeb; //Funcion para WEB
+    var fabricaBaseDatos = databaseFactory; //Funcion para Android
     String rutaBaseDatos =
         '${await fabricaBaseDatos.getDatabasesPath()}/carrosDB.db';
 
