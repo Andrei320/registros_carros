@@ -67,6 +67,9 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
         dbCarro.deleteMovimiento(event.idmovimiento);
         emit(MovimientoEliminado());
         add(GetMovimientos());
+
+        carroBloc.add(GetCarros());
+        categoriaBloc.add(GetCategorias());
       } catch (e) {
         emit(ErrorAlEliminarMovimiento(
             mensajeError: 'Error al eliminar el movimiento.'));
@@ -86,6 +89,9 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
 
         emit(MovimientoActualizado());
         add(GetMovimientos());
+
+        carroBloc.add(GetCarros());
+        categoriaBloc.add(GetCategorias());
       } catch (e) {
         emit(ErrorAlActualizarMovimiento(
             mensajeError: 'Error al insertar el carro.'));
