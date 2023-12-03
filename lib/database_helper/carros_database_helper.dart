@@ -63,7 +63,7 @@ class DBCarro {
 //DB PARA CATEGORIAS
   Future<List<Map<String, dynamic>>> getCategorias() async {
     var resultadoConsulta = await db.rawQuery(
-        'SELECT * ,COALESCE(SUM(movimientos.gastototal),0) AS totalgasto FROM categorias LEFT JOIN movimientos on categorias.idcategoria = movimientos.idcategoria GROUP BY categorias.idcategoria ORDER BY archivado DESC;');
+        'SELECT categorias.*, COALESCE(SUM(movimientos.gastototal), 0) AS totalgasto FROM categorias LEFT JOIN movimientos ON categorias.idcategoria = movimientos.idcategoria GROUP BY categorias.idcategoria ORDER BY archivado DESC;');
     return resultadoConsulta;
   }
 
