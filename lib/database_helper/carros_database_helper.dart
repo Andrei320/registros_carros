@@ -1,13 +1,12 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 late Database db;
 
 class DBCarro {
   Future<void> initializeDatabase() async {
-    var fabricaBaseDatos = databaseFactoryFfiWeb;
+    var fabricaBaseDatos = databaseFactory;
     String rutaBaseDatos =
-        '${await fabricaBaseDatos.getDatabasesPath()}/carros_gastos.db';
+        '${await fabricaBaseDatos.getDatabasesPath()}/carrosDB.db';
 
     db = await fabricaBaseDatos.openDatabase(
       rutaBaseDatos,
@@ -22,6 +21,9 @@ class DBCarro {
 
           await db.execute(
               'CREATE TABLE IF NOT EXISTS movimientos (idmovimiento INTEGER PRIMARY KEY AUTOINCREMENT, nombremovimiento TEXT NOT NULL, idcarro INT NOT NULL, idcategoria INT NOT NULL, gastototal INT NOT NULL, fechagasto TEXT(30) NOT NULL)');
+
+          await db.execute(
+              "INSERT INTO categorias (nombrecategoria) VALUES ('Gasolina'),('Mantenimiento'),('Limpieza')");
         },
       ),
     );
