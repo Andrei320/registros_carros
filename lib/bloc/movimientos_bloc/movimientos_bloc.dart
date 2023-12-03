@@ -1,11 +1,18 @@
 import 'package:bloc/bloc.dart';
+import 'package:registros_carros/bloc/carros_bloc/carros_bloc.dart';
+import 'package:registros_carros/bloc/carros_bloc/carros_bloc_event.dart';
+import 'package:registros_carros/bloc/categorias_bloc/categorias_bloc.dart';
+import 'package:registros_carros/bloc/categorias_bloc/categorias_bloc_eventos.dart';
 import 'package:registros_carros/bloc/movimientos_bloc/movimientos_bloc_estado.dart';
 import 'package:registros_carros/bloc/movimientos_bloc/movimientos_bloc_eventos.dart';
 import 'package:registros_carros/database_helper/carros_database_helper.dart';
 
 class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
+  final CategoriaBloc categoriaBloc;
+  final CarroBloc carroBloc;
   final DBCarro dbCarro;
-  MovimientoBloc(this.dbCarro) : super(EstadoMovimientoInicial()) {
+  MovimientoBloc(this.dbCarro, this.categoriaBloc, this.carroBloc)
+      : super(EstadoMovimientoInicial()) {
     on<MovimientoInicializado>((event, emit) {
       emit(EstadoMovimientoInicial());
     });
@@ -47,6 +54,8 @@ class MovimientoBloc extends Bloc<MovimientoEvento, MovimientoEstado> {
 
         emit(MovimientoInsertado());
         add(GetMovimientos());
+        carroBloc.add(GetCarros());
+        categoriaBloc.add(GetCategorias());
       } catch (e) {
         emit(ErrorAlInsertarMovimiento(
             mensajeError: 'Error al insertar el movimiento.'));

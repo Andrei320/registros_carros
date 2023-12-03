@@ -22,17 +22,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final carrosDatabase = DBCarro();
   await carrosDatabase.initializeDatabase();
+  final categoriaBlocInstance = CategoriaBloc(carrosDatabase);
+  final carroBlocInstance = CarroBloc(carrosDatabase);
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider<CarroBloc>(
-          create: (context) => CarroBloc(carrosDatabase),
+          create: (context) => carroBlocInstance,
         ),
         BlocProvider<CategoriaBloc>(
-          create: (context) => CategoriaBloc(carrosDatabase),
+          create: (context) => categoriaBlocInstance,
         ),
         BlocProvider<MovimientoBloc>(
-          create: (context) => MovimientoBloc(carrosDatabase),
+          create: (context) => MovimientoBloc(
+              carrosDatabase, categoriaBlocInstance, carroBlocInstance),
         ),
       ],
       child: const App(),
