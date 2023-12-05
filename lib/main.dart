@@ -909,8 +909,8 @@ class _ListaMovimientosState extends State<ListaMovimientos> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Center(
-                                child: Text('¿Eliminar Movimiento?')),
+                            title:
+                                const Center(child: Text('¿Eliminar Gasto?')),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -967,88 +967,6 @@ class _ListaMovimientosState extends State<ListaMovimientos> {
       },
     );
   }
-
-  void _mostrarFiltroDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Filtrar Movimientos'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Filtra por'),
-              const SizedBox(height: 10.0),
-              // Dropdown para carros
-              BlocBuilder<CarroBloc, CarroEstado>(
-                builder: (context, carroState) {
-                  if (carroState is GetAllCarros) {
-                    List<Map<String, dynamic>> carros = carroState.carros;
-                    int carroSeleccionado =
-                        0; // Variable para almacenar el carro seleccionado
-
-                    return DropdownButton<int>(
-                      onChanged: (newValue) {
-                        // Actualizar el valor seleccionado del carro
-                        carroSeleccionado = newValue!;
-                      },
-                      value: carroSeleccionado,
-                      items: carros.map((carro) {
-                        return DropdownMenuItem<int>(
-                          value: carro['idcarro'],
-                          child: Text(carro['apodo'].toString()),
-                        );
-                      }).toList(),
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                },
-              ),
-              const SizedBox(height: 10.0),
-              // Dropdown para categorías
-              BlocBuilder<CategoriaBloc, CategoriaEstado>(
-                builder: (context, categoriaState) {
-                  if (categoriaState is GetAllCategorias) {
-                    List<Map<String, dynamic>> categorias =
-                        categoriaState.categorias;
-                    int categoriaSeleccionada =
-                        0; // Variable para almacenar la categoría seleccionada
-
-                    return DropdownButton<int>(
-                      onChanged: (newValue) {
-                        // Actualizar el valor seleccionado de la categoría
-                        categoriaSeleccionada = newValue!;
-                      },
-                      value: categoriaSeleccionada,
-                      items: categorias.map((categoria) {
-                        return DropdownMenuItem<int>(
-                          value: categoria['idcategoria'],
-                          child: Text(categoria['nombrecategoria'].toString()),
-                        );
-                      }).toList(),
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                },
-              ),
-              const SizedBox(height: 10.0),
-              ElevatedButton(
-                onPressed: () {
-                  // Aquí deberías llamar a tu método para filtrar los movimientos
-                  // usando carroSeleccionado y categoriaSeleccionada
-                  // Ejemplo: context.read<MovimientoBloc>().add(GetFiltros(idcarro: carroSeleccionado, idcategoria: categoriaSeleccionada));
-                  Navigator.pop(context); // Cerrar el diálogo de filtro
-                },
-                child: const Text('Aplicar Filtro'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
 
 class AgregarMovimiento extends StatefulWidget {
@@ -1069,6 +987,7 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
       initialDate: selectedDate,
       firstDate: DateTime.now()
           .subtract(const Duration(days: 365)), // Restringe un año hacia atrás
@@ -1266,6 +1185,7 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
       initialDate: selectedFecha,
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now(),
@@ -1287,15 +1207,13 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
     String fechaDB = widget.movimiento['fechagasto'];
     selectedFecha = DateTime.parse(
         fechaDB); // Asigna la fecha de la base de datos a selectedDate
-    print(
-        selectedFecha); // Añadir este print para verificar el valor de selectedDate
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nuevo Gasto'),
+        title: const Text('Editar Gasto'),
         backgroundColor: Colors.purple,
       ),
       body: Padding(
