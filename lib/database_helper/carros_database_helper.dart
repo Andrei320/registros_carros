@@ -109,9 +109,9 @@ class DBCarro {
         'INSERT INTO movimientos (nombremovimiento, idcarro, idcategoria, gastototal, fechagasto) VALUES (?, ?, ?, ?, ?)',
         [nombremovimiento, idcarro, idcategoria, gastototal, fechagasto],
       );
-      print('Movimiento insertado correctamente');
+      //print('Movimiento insertado correctamente');
     } catch (e) {
-      print('Error al insertar el movimiento: $e');
+      //print('Error al insertar el movimiento: $e');
       // Maneja el error de inserción aquí si es necesario
     }
   }

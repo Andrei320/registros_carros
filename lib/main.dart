@@ -899,7 +899,6 @@ class _ListaMovimientosState extends State<ListaMovimientos> {
                   ],
                 ),
               ),
-              // Agregar el botón de borrado aquí
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
