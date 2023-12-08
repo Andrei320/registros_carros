@@ -1014,7 +1014,7 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     BlocBuilder<CarroBloc, CarroEstado>(
@@ -1249,7 +1249,7 @@ class _EditarMovimientoState extends State<EditarMovimiento> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(
+              Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   BlocBuilder<CarroBloc, CarroEstado>(
