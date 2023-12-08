@@ -979,8 +979,8 @@ class AgregarMovimiento extends StatefulWidget {
 class _AgregarMovimientoState extends State<AgregarMovimiento> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController nombreController = TextEditingController();
-  int carroSeleccionado = 1;
-  int categoriaSeleccionada = 1;
+  int carroSeleccionado = 0;
+  int categoriaSeleccionada = 0;
   TextEditingController gastosController = TextEditingController();
   DateTime selectedDate = DateTime.now();
 
@@ -1021,21 +1021,30 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
                     BlocBuilder<CarroBloc, CarroEstado>(
                       builder: (context, carroState) {
                         if (carroState is GetAllCarros) {
-                          List<Map<String, dynamic>> carros = carroState.carros;
+                          List<Map<String, dynamic>> carros = carroState
+                              .carrosArchivados; // Usar carrosArchivados en lugar de carros
 
                           return DropdownButton<int>(
                             onChanged: (newValue) {
                               setState(() {
-                                carroSeleccionado = newValue!;
+                                if (newValue != null && newValue != 0) {
+                                  carroSeleccionado = newValue;
+                                }
                               });
                             },
-                            value: carroSeleccionado, // Valor seleccionado
-                            items: carros.map((carro) {
-                              return DropdownMenuItem<int>(
-                                value: carro['idcarro'],
-                                child: Text(carro['apodo'].toString()),
-                              );
-                            }).toList(),
+                            value: carroSeleccionado,
+                            items: [
+                              const DropdownMenuItem<int>(
+                                value: 0,
+                                child: Text('Seleccione un carro'),
+                              ),
+                              ...carros.map((carro) {
+                                return DropdownMenuItem<int>(
+                                  value: carro['idcarro'],
+                                  child: Text(carro['apodo'].toString()),
+                                );
+                              }).toList(),
+                            ],
                           );
                         } else {
                           return const CircularProgressIndicator();
@@ -1046,7 +1055,7 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
                       builder: (context, categoriaState) {
                         if (categoriaState is GetAllCategorias) {
                           List<Map<String, dynamic>> categorias =
-                              categoriaState.categorias;
+                              categoriaState.categoriasarchivadas;
 
                           return DropdownButton<int>(
                             value: categoriaSeleccionada,
@@ -1055,13 +1064,20 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
                                 categoriaSeleccionada = newValue!;
                               });
                             },
-                            items: categorias.map((categoria) {
-                              return DropdownMenuItem<int>(
-                                value: categoria['idcategoria'],
-                                child: Text(
-                                    categoria['nombrecategoria'].toString()),
-                              );
-                            }).toList(),
+                            items: [
+                              const DropdownMenuItem<int>(
+                                value: 0,
+                                child: Text('Seleccione una categoría'),
+                              ),
+                              ...categorias.map((categoria) {
+                                return DropdownMenuItem<int>(
+                                  value: categoria['idcategoria'],
+                                  child: Text(
+                                    categoria['nombrecategoria'].toString(),
+                                  ),
+                                );
+                              }).toList(),
+                            ],
                           );
                         } else {
                           return const CircularProgressIndicator();
@@ -1114,14 +1130,26 @@ class _AgregarMovimientoState extends State<AgregarMovimiento> {
                 ),
                 const SizedBox(height: 10.0),
                 ElevatedButton(
-                  onPressed: () {
-                    _insertarMovimiento(context);
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: carroSeleccionado != 0 &&
+                          categoriaSeleccionada != 0
+                      ? () {
+                          _insertarMovimiento(context);
+                          Navigator.of(context).pop();
+                        }
+                      : null, // Deshabilita el botón si carroSeleccionado o categoriaSeleccionada son 0
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                   ),
-                  child: const Text('Insertar Gasto'),
+                  child: Text(
+                    'Insertar Gasto',
+                    // Cambia el estilo del texto si carroSeleccionado o categoriaSeleccionada son 0
+                    style: TextStyle(
+                      color:
+                          (carroSeleccionado != 0 && categoriaSeleccionada != 0)
+                              ? Colors.white
+                              : Colors.grey,
+                    ),
+                  ),
                 ),
               ],
             ),

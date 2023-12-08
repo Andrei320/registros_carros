@@ -12,14 +12,9 @@ class CarroSeleccionadoEstado extends CarroEstado {
 
 class GetAllCarros extends CarroEstado {
   final List<Map<String, dynamic>> carros;
+  final List<Map<String, dynamic>> carrosArchivados;
 
-  GetAllCarros({required this.carros});
-}
-
-class GetAllCarrosdl extends CarroEstado {
-  final List<Map<String, dynamic>> carrosdl;
-
-  GetAllCarrosdl({required this.carrosdl});
+  GetAllCarros({required this.carros, required this.carrosArchivados});
 }
 
 class CarroInsertado extends CarroEstado {}

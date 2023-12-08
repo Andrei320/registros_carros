@@ -10,8 +10,6 @@ class CarroSeleccionado extends CarroEvento {
 
 class GetCarros extends CarroEvento {}
 
-class GetCarrosdl extends CarroEvento {}
-
 class InsertarCarro extends CarroEvento {
   final String apodo;
 
