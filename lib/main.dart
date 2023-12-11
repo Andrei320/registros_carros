@@ -300,6 +300,7 @@ class AgregarCarro extends StatefulWidget {
 class _AgregarCarroState extends State<AgregarCarro> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController apodoController = TextEditingController();
+  // final String _labelText = '';
 
   @override
   Widget build(BuildContext context) {
@@ -320,8 +321,15 @@ class _AgregarCarroState extends State<AgregarCarro> {
                   children: [
                     TextFormField(
                       controller: apodoController,
+                      // onChanged: (value) {
+                      //   setState(() {
+                      //     _labelText =
+                      //         value.isEmpty ? 'Apodo no puede estar vacio' : '';
+                      //   });
+                      // },
                       decoration: InputDecoration(
                         labelText: 'Apodo',
+                        // errorText: _labelText,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
@@ -337,8 +345,10 @@ class _AgregarCarroState extends State<AgregarCarro> {
                     ElevatedButton(
                       onPressed: () {
                         _insertarCarro(context);
-                        Navigator.of(context).pop();
                       },
+                      // onPressed:apodoController.text.isNotEmpty ? () {
+                      //   _insertarCarro(context);
+                      // } : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
                       ),
@@ -363,6 +373,7 @@ class _AgregarCarroState extends State<AgregarCarro> {
           apodo: apodoController.text,
         ),
       );
+      Navigator.of(context).pop();
     }
   }
 }
@@ -668,7 +679,6 @@ class _AgregarCategoriaState extends State<AgregarCategoria> {
                     ElevatedButton(
                       onPressed: () {
                         _insertarCategoria(context);
-                        Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
@@ -694,6 +704,7 @@ class _AgregarCategoriaState extends State<AgregarCategoria> {
           nombrecategoria: nombreController.text,
         ),
       );
+      Navigator.of(context).pop();
     }
   }
 }
